@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Learning to Drive – King's Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #050816;
+      --card-bg: #111827;
+      --accent: #f97316;
+      --accent-soft: rgba(249,115,22,0.2);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --wrong: #ef4444;
+      --correct: #22c55e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 55%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .app {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    header {
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    header h1 span.logo-pill {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+    }
+
+    header p {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .quiz-card {
+      background: linear-gradient(135deg, rgba(15,23,42,0.98), rgba(12,10,24,0.98));
+      border-radius: 18px;
+      border: 1px solid rgba(148,163,184,0.35);
+      box-shadow: 0 24px 60px rgba(15,23,42,0.85);
+      padding: 18px 20px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quiz-card-inner { position: relative; z-index: 1; }
+
+    .progress-bar {
+      width: 100%;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--accent), #facc15);
+      transition: width 0.3s ease-out;
+    }
+
+    .section-tag {
+      font-size: 0.8rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .question-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .question-media img {
+      max-width: 260px;
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(148,163,184,0.5);
+      background: rgba(15,23,42,0.9);
+      padding: 6px;
+      margin-bottom: 15px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .options-grid { grid-template-columns: 1fr; }
+    }
+
+    .option-btn {
+      border-radius: 12px;
+      border: 1px solid rgba(148,163,184,0.55);
+      background: rgba(15,23,42,0.85);
+      padding: 9px 10px;
+      text-align: left;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      font-size: 0.92rem;
+      cursor: pointer;
+      color: #ffffff;
+    }
+
+    .option-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent);
+    }
+
+    .option-label {
+      width: 24px; height: 24px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.7);
+      display: flex; align-items: center; justify-content: center;
+      color: #ffffff;
+    }
+
+    .option-btn.correct { border-color: var(--correct); background: rgba(22,163,74,0.12); }
+    .option-btn.wrong { border-color: var(--wrong); background: rgba(239,68,68,0.12); }
+    .option-btn.disabled { cursor: default; opacity: 0.85; }
+
+    .meta-row {
+      display: flex; justify-content: space-between;
+      font-size: 0.85rem; margin-bottom: 8px; color: var(--muted);
+    }
+
+    .pill {
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      background: rgba(15,23,42,0.7);
+      display: inline-flex; gap: 6px; align-items: center;
+    }
+
+    .pill .dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 999px;
+    }
+
+    .feedback-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .cta-row {
+      display: flex; justify-content: space-between;
+      margin-top: 8px;
+    }
+
+    .primary-btn {
+      background: var(--accent);
+      border-radius: 999px;
+      padding: 7px 14px;
+      border: none;
+      cursor: pointer;
+      color: #111827;
+      font-weight: 600;
+    }
+
+    .secondary-btn {
+      background: rgba(15,23,42,0.95);
+      border-radius: 999px;
+      padding: 7px 14px;
+      border: 1px solid rgba(148,163,184,0.5);
+      cursor: pointer;
+      color: var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>
+          Learning to Drive
+          <span class="logo-pill">King's | Futures</span>
+        </h1>
+        <p>Designed for Lower Sixth at King’s – for anyone thinking about learning to drive.</p>
+      </div>
+    </header>
+
+    <div class="quiz-card">
+      <div class="quiz-card-inner" id="quiz-root"></div>
+    </div>
+  </div>
+
+  <script>
+    /* ===========================
+       UPDATED 29-QUESTION QUIZ
+       =========================== */
+    const questions = [
+      // Section 1 – Highway Code
+      {
+        id: 1,
+        section: "Highway Code",
+        sectionIndex: 1,
+        text: "Hand-held mobile phones seriously reduce your concentration. How many penalty points would you receive if caught using a mobile phone while driving?",
+        options: ["3", "6", "9", "10"],
+        correctIndex: 1
+      },
+      {
+        id: 2,
+        section: "Highway Code",
+        sectionIndex: 1,
+        text: "Who has priority at an unmarked crossroad?",
+        options: [
+          "You, the driver",
+          "Pedestrians",
+          "Crossing vehicles",
+          "No one"
+        ],
+        correctIndex: 3
+      },
+      {
+        id: 3,
+        section: "Highway Code",
+        sectionIndex: 1,
+        text: "You’re waiting at a pelican crossing. What does it mean when the red light changes to flashing amber?",
+        options: [
+          "Move off immediately",
+          "Give way to pedestrians on the crossing",
+          "Wait for the green light",
+          "Get ready to go"
+        ],
+        correctIndex: 1
+      },
+      {
+        id: 4,
+        section: "Highway Code",
+        sectionIndex: 1,
+        text: "What should you do when you park at night on a road that has a 40 mph speed limit?",
+        options: [
+          "Park facing traffic",
+          "Leave parking lights switched on",
+          "Leave dipped headlights switched on",
+          "Park near a street light"
+        ],
+        correctIndex: 1
+      },
+      {
+        id: 5,
+        section: "Highway Code",
+        sectionIndex: 1,
+        text: "On a motorway, when are you allowed to use the hard shoulder?",
+        options: [
+          "When traffic is queuing",
+          "In an emergency, or when directed to by police or a traffic sign",
+          "To overtake slower vehicles",
+          "If your sat nav suggests a route"
+        ],
+        correctIndex: 1
+      },
+      {
+        id: 6,
+        section: "Highway Code",
+        sectionIndex: 1,
+        text: "When joining a motorway from a slip road, you should:",
+        options: [
+          "Stop at the end of the slip road",
+          "Signal only once on the motorway",
+          "Enter the middle lane",
+          "Match your speed to the traffic in the left-hand lane"
+        ],
+        correctIndex: 3
+      },
+      {
+        id: 7,
+        section: "Highway Code",
+        sectionIndex: 1,
+        text: "You are driving at 70 mph on a motorway in good conditions. What is the typical overall stopping distance?",
+        options: ["75 metres", "96 metres", "115 metres", "140 metres"],
+        correctIndex: 1
+      },
+      {
+        id: 8,
+        section: "Highway Code",
+        sectionIndex: 1,
+        text: "You see a flashing amber beacon on a vehicle ahead. What does this indicate?",
+        options: [
+          "The vehicle is carrying an abnormal load or moving slowly",
+          "The driver is indicating left",
+          "It is an emergency vehicle",
+          "The vehicle has broken down"
+        ],
+        correctIndex: 0
+      },
+
+      // Section 2 – Driving Law
+      {
+        id: 9,
+        section: "Driving Law",
+        sectionIndex: 2,
+        text: "Which of the following could invalidate your car insurance?",
+        options: [
+          "Using your car for commuting",
+          "Allowing an uninsured friend to drive your car",
+          "Having a valid MOT",
+          "Changing your address without updating your licence"
+        ],
+        correctIndex: 1
+      },
+      {
+        id: 10,
+        section: "Driving Law",
+        sectionIndex: 2,
+        text: "What is the minimum eyesight requirement for driving in the UK?",
+        options: [
+          "Read a number plate from 10 metres",
+          "Read a number plate from 20 metres",
+          "Read a number plate from 25 metres",
+          "Read a number plate from 30 metres"
+        ],
+        correctIndex: 1
+      },
+      {
+        id: 11,
+        section: "Driving Law",
+        sectionIndex: 2,
+        text: "You are involved in a collision causing injury. What are you legally required to do?",
+        options: [
+          "Leave your details and report it later",
+          "Stop and give your name and address. If you don’t exchange details, report to police within 24 hours.",
+          "Call your insurer immediately",
+          "Exchange insurance details only if asked"
+        ],
+        correctIndex: 1
+      },
+      {
+        id: 12,
+        section: "Driving Law",
+        sectionIndex: 2,
+        text: "If your car fails its MOT, when can you still drive it legally?",
+        options: [
+          "Any time within 14 days",
+          "For up to 48 hours",
+          "Only to or from a pre-booked MOT or repair appointment",
+          "Until your current certificate expires"
+        ],
+        correctIndex: 2
+      },
+      {
+        id: 13,
+        section: "Driving Law",
+        sectionIndex: 2,
+        text: "What is the maximum fine for driving without insurance in the UK?",
+        options: ["£200", "£500", "£1,000", "Unlimited fine"],
+        correctIndex: 3
+      },
+      {
+        id: 14,
+        section: "Driving Law",
+        sectionIndex: 2,
+        text: "Under what circumstance can you drive in a bus lane during its hours of operation?",
+        options: [
+          "To overtake slower vehicles",
+          "When necessary to avoid an obstruction or collision, or when directed by police or a sign",
+          "If no buses are visible",
+          "If traffic is heavy"
+        ],
+        correctIndex: 1
+      },
+      {
+        id: 15,
+        section: "Driving Law",
+        sectionIndex: 2,
+        text: "How long do driving endorsements usually remain on your licence for standard offences?",
+        options: [
+          "1 year",
+          "3 years",
+          "4 years",
+          "11 years"
+        ],
+        correctIndex: 2
+      },
+      {
+        id: 16,
+        section: "Driving Law",
+        sectionIndex: 2,
+        text: "You are stopped by police and cannot produce your licence or insurance certificate. What must you do?",
+        options: [
+          "Take them to a police station within 7 days",
+          "Send copies to your insurer",
+          "Provide them by email",
+          "Apply for duplicates immediately"
+        ],
+        correctIndex: 0
+      },
+      {
+        id: 17,
+        section: "Driving Law",
+        sectionIndex: 2,
+        text: "What is the minimum disqualification for a first drug-driving offence?",
+        options: ["3 months", "6 months", "12 months", "24 months"],
+        correctIndex: 2
+      },
+      {
+        id: 18,
+        section: "Driving Law",
+        sectionIndex: 2,
+        text: "When can police require you to take a roadside breath test?",
+        options: [
+          "Only after an accident",
+          "Only if you appear unsteady",
+          "If you commit a traffic offence, have a collision, or they suspect alcohol",
+          "Only at night"
+        ],
+        correctIndex: 2
+      },
+
+      // Section 3 – Traffic Signs
+      {
+        id: 19,
+        section: "Traffic Signs",
+        sectionIndex: 3,
+        text: "What does this sign mean?",
+        media: { type: "image", src: "images/q21.png" },
+        options: [
+          "Tyres liable to puncture",
+          "Slippery road",
+          "Service area",
+          "Danger ahead / other danger"
+        ],
+        correctIndex: 3
+      },
+      {
+        id: 20,
+        section: "Traffic Signs",
+        sectionIndex: 3,
+        text: "When may you cross a double solid white line?",
+        options: [
+          "To pass a car turning left",
+          "To pass queuing traffic",
+          "To pass a road maintenance vehicle travelling under 10 mph",
+          "To pass a vehicle towing a trailer"
+        ],
+        correctIndex: 2
+      },
+      {
+        id: 21,
+        section: "Traffic Signs",
+        sectionIndex: 3,
+        text: "What does this arm signal mean?",
+        media: { type: "image", src: "images/q23.png" },
+        options: [
+          "Driver wants to overtake",
+          "Driver slowing down",
+          "Driver intends to turn right",
+          "Driver intends to turn left"
+        ],
+        correctIndex: 3
+      },
+      {
+        id: 22,
+        section: "Traffic Signs",
+        sectionIndex: 3,
+        text: "How can you identify traffic signs that give orders?",
+        options: [
+          "Square brown border",
+          "Rectangular yellow border",
+          "Circular red border",
+          "Triangular blue border"
+        ],
+        correctIndex: 2
+      },
+      {
+        id: 23,
+        section: "Traffic Signs",
+        sectionIndex: 3,
+        text: "What is this sign?",
+        media: { type: "image", src: "images/q25.png" },
+        options: [
+          "Distance to telephone",
+          "Distance to passing place",
+          "Distance to public house",
+          "Distance to parking place"
+        ],
+        correctIndex: 3
+      },
+      {
+        id: 24,
+        section: "Traffic Signs",
+        sectionIndex: 3,
+        text: "What is this sign?",
+        media: { type: "image", src: "images/q26.png" },
+        options: [
+          "Leave motorway at next exit",
+          "Move to the left lane",
+          "Change to opposite carriageway",
+          "Stop on the hard shoulder"
+        ],
+        correctIndex: 1
+      },
+      {
+        id: 25,
+        section: "Traffic Signs",
+        sectionIndex: 3,
+        text: "What is this sign?",
+        media: { type: "image", src: "images/q27.png" },
+        options: [
+          "No through road",
+          "T-junction",
+          "Telephone ahead",
+          "Toilet ahead"
+        ],
+        correctIndex: 0
+      },
+      {
+        id: 26,
+        section: "Traffic Signs",
+        sectionIndex: 3,
+        text: "What is this sign?",
+        media: { type: "image", src: "images/q28.png" },
+        options: [
+          "Priority over incoming traffic",
+          "No U-turns",
+          "Give priority to oncoming traffic",
+          "One way"
+        ],
+        correctIndex: 3
+      },
+      {
+        id: 27,
+        section: "Traffic Signs",
+        sectionIndex: 3,
+        text: "What is this sign?",
+        media: { type: "image", src: "images/q29.png" },
+        options: [
+          "Priority over incoming traffic",
+          "No U-turns",
+          "Give priority to oncoming traffic",
+          "One way"
+        ],
+        correctIndex: 0
+      },
+      {
+        id: 28,
+        section: "Traffic Signs",
+        sectionIndex: 3,
+        text: "You’re driving in busy traffic. You want to pull up just after a junction on the left. When should you signal?",
+        options: [
+          "Do not signal at all",
+          "As you’re passing or just after the junction",
+          "Well before reaching the junction",
+          "Just before the junction"
+        ],
+        correctIndex: 1
+      }
+    ];
+
+    // ===================
+    // Quiz Logic
+    // ===================
+    let index = 0;
+    let score = 0;
+    let answered = [];
+
+    const root = document.getElementById("quiz-root");
+
+    function render() {
+      const q = questions[index];
+      const pct = (index / questions.length) * 100;
+
+      root.innerHTML = `
+        <div class="meta-row">
+          <div class="pill"><span class="dot"></span>Q${index + 1} of ${questions.length}</div>
+          <div class="score-chip">Score: ${score}</div>
+        </div>
+
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;"></div></div>
+
+        <div class="section-tag">Section ${q.sectionIndex}: ${q.section}</div>
+
+        <div class="question-text">${q.text}</div>
+
+        ${q.media ? `<div class="question-media"><img src="${q.media.src}"></div>` : ""}
+
+        <div class="options-grid">
+          ${q.options.map((o, i) =>
+            `<button class="option-btn" data-index="${i}">
+              <span class="option-label">${"ABCD"[i]}</span>
+              <span>${o}</span>
+            </button>`
+          ).join("")}
+        </div>
+
+        <div class="feedback-row">
+          <div id="feedback"></div>
+          <button class="secondary-btn" id="restart">Restart</button>
+        </div>
+
+        <div class="cta-row">
+          <div></div>
+          <button class="primary-btn" id="next" disabled>Next →</button>
+        </div>
+      `;
+
+      document.querySelectorAll(".option-btn").forEach(btn => {
+        btn.addEventListener("click", () => choose(btn));
+      });
+
+      document.getElementById("restart").addEventListener("click", restart);
+      document.getElementById("next").addEventListener("click", next);
+    }
+
+    function choose(btn) {
+      const chosen = Number(btn.dataset.index);
+      const q = questions[index];
+
+      if (answered.includes(q.id)) return;
+      answered.push(q.id);
+
+      document.querySelectorAll(".option-btn").forEach((b, i) => {
+        b.classList.add("disabled");
+        if (i === q.correctIndex) b.classList.add("correct");
+        if (i === chosen && i !== q.correctIndex) b.classList.add("wrong");
+      });
+
+      if (chosen === q.correctIndex) {
+        score++;
+        document.getElementById("feedback").innerHTML = "Correct.";
+      } else {
+        document.getElementById("feedback").innerHTML =
+          `Incorrect. Correct answer: ${"ABCD"[q.correctIndex]}.`;
+      }
+
+      document.getElementById("next").disabled = false;
+    }
+
+    function next() {
+      if (index < questions.length - 1) {
+        index++;
+        render();
+      } else {
+        showResults();
+      }
+    }
+
+    function restart() {
+      index = 0;
+      score = 0;
+      answered = [];
+      render();
+    }
+
+    function showResults() {
+      root.innerHTML = `
+        <h2 style="margin-bottom:10px;">Quiz complete</h2>
+        <p>Your final score: <strong>${score} / ${questions.length}</strong></p>
+        <button class="primary-btn" style="margin-top:20px;" onclick="restart()">Restart</button>
+      `;
+    }
+
+    render();
+  </script>
+</body>
+</html>
